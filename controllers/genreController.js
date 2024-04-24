@@ -1,6 +1,7 @@
 const Genre = require('../models/genre');
 const asyncHandler = require('express-async-handler');
 const Book = require('../models/book');
+const { body, validationResult } = require('express-validator');
 
 // Display list of all Genre.
 exports.genre_list = asyncHandler(async (req, res, next) => {
@@ -38,13 +39,57 @@ exports.genre_detail = asyncHandler(async (req, res, next) => {
 
 // Display Genre create form on GET.
 exports.genre_create_get = asyncHandler(async (req, res, next) => {
-    res.send('NOT IMPLEMENTED: Genre create GET');
+    // doesnt use async handler since no code here can throw an exception
+    res.render('genre_form', { title: 'Create Genre' });
 });
 
 // Handle Genre create on POST.
-exports.genre_create_post = asyncHandler(async (req, res, next) => {
-    res.send('NOT IMPLEMENTED: Genre create POST');
-});
+// Note how the method is an array of middleware. This is required to execute the
+// midddleware functions in order
+exports.genre_create_post = [
+    // Validate and sanitize the name field
+    // Take body, trim name, validate name length, escape name (check and remove dangerous HTML)
+    body('name', 'Genre name must contain at least 3 characters')
+        .trim()
+        .isLength({ min: 3 })
+        .escape(),
+
+    // Process request after validate and sanitize operation
+    asyncHandler(async (req, res, next) => {
+        // Extract validation errors from a request
+        const errors = validationResult(req);
+
+        //create genre object with checked data
+        const genre = new Genre({ name: req.body.name });
+
+        if (!errors.isEmpty()) {
+            // Errors were found, render form again with fixed values and error messages
+            res.render('genre_form', {
+                title: 'Create genre',
+                genre: genre,
+                errors: errors.array(),
+            });
+            // finish here dude to error
+            return;
+        } else {
+            //no errors found, proceed.
+            const genreExists = await Genre.findOne({
+                name: req.body.name,
+            })
+                // collation is mongoose method that checks for english similarities like Fantasy, fantasy and FaNtaSy
+                .collation({ locale: 'en', strength: 2 })
+                .exec();
+            if (genreExists) {
+                //genre exists, redirect to its details page
+                res.redirect(genreExists.url);
+            } else {
+                await genre.save();
+                // genre now saved,d redirect to new genre detail paage
+                res.redirect(genre.url);
+            }
+        }
+    }),
+];
 
 // Display Genre delete form on GET.
 exports.genre_delete_get = asyncHandler(async (req, res, next) => {
