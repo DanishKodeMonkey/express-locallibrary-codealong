@@ -14,7 +14,6 @@ exports.genre_list = asyncHandler(async (req, res, next) => {
 
 // Display detail page for a specific Genre.
 exports.genre_detail = asyncHandler(async (req, res, next) => {
-    console.log('request params id', req.params.id);
     // GET details of genre and all associated books in parallel based on genre id
     // Deconstruct the resolved promises once all have resolved into genre and booksInGenre
     const [genre, booksInGenre] = await Promise.all([
@@ -28,7 +27,6 @@ exports.genre_detail = asyncHandler(async (req, res, next) => {
         err.status = 404;
         return next(err);
     }
-    console.log('promise result', genre, booksInGenre);
     //otherwise, respond with render.
     res.render('genre_detail', {
         title: 'Genre Detail',
@@ -93,12 +91,43 @@ exports.genre_create_post = [
 
 // Display Genre delete form on GET.
 exports.genre_delete_get = asyncHandler(async (req, res, next) => {
-    res.send('NOT IMPLEMENTED: Genre delete GET');
+    // GET details of Genres  and their books paralell
+    const [genre, allGenreBooks] = await Promise.all([
+        Genre.findById(req.params.id).exec(),
+        Book.find({ genre: req.params.id }, 'title summary').exec(),
+    ]);
+    if (genre === null) {
+        // No results
+        // Nothing to delete, redirect.
+        res.redirect('/catalog/genres');
+    }
+    // render genre_delete.pug and pass data
+    res.render('genre_delete', {
+        title: 'Delete Genre',
+        genre: genre,
+        genre_books: allGenreBooks,
+    });
 });
 
 // Handle Genre delete on POST.
 exports.genre_delete_post = asyncHandler(async (req, res, next) => {
-    res.send('NOT IMPLEMENTED: Genre delete POST');
+    const [genre, allGenreBooks] = await Promise.all([
+        Genre.findById(req.params.id).exec(),
+        Book.find({ genre: req.params.id }, 'genre books').exec(),
+    ]);
+    if (allGenreBooks.length > 0) {
+        // book has instances
+        res.render('genre_delete', {
+            title: 'Delete genre',
+            genre: genre,
+            genre_books: allGenreBooks,
+        });
+        return;
+    } else {
+        // Book has no instances
+        await Genre.findByIdAndDelete(req.body.genreid);
+        res.redirect('/catalog/genres');
+    }
 });
 
 // Display Genre update form on GET.

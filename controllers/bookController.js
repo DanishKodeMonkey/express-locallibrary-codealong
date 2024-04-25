@@ -162,7 +162,7 @@ exports.book_create_post = [
 
 // Display book delete form on GET.
 exports.book_delete_get = asyncHandler(async (req, res, next) => {
-    // GET details of author and their books paralell
+    // GET details of book and their instances paralell
     const [book, allBookInstances] = await Promise.all([
         Book.findById(req.params.id).exec(),
         BookInstance.find({ book: req.params.id }, 'book instances').exec(),
@@ -172,7 +172,7 @@ exports.book_delete_get = asyncHandler(async (req, res, next) => {
         // Nothing to delete, redirect.
         res.redirect('/catalog/books');
     }
-    // render author_delete.pug and pass data
+    // render book_delete.pug and pass data
     res.render('book_delete', {
         title: 'Delete Book',
         book: book,
@@ -196,7 +196,7 @@ exports.book_delete_post = asyncHandler(async (req, res, next) => {
         return;
     } else {
         // Book has no instances
-        await Author.findByIdAndDelete(req.body.bookid);
+        await Book.findByIdAndDelete(req.body.bookid);
         res.redirect('/catalog/authors');
     }
 });
