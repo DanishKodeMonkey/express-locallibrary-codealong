@@ -9,8 +9,9 @@ block content
         input#first_name.form-control(type='text', placeholder='first name( Christian )' name='first_name' required value=(undefined===author ? '' : author.family_name))
         div.form-group
             label(for='date_of_birth') Date of birth:
-            input#date_of_birth.form-control(type='date' name='date_of_birth' value=(undefined=== author ? '' : author.date_of_birth))
-            input#date_of_death.form-control(type='date' name='date_of_death' value=(undefined=== author ? '' : author.date_of_death))
+            -console.log(author)
+            input#date_of_birth.form-control(type='date' name='date_of_birth' value=(undefined === author ? '' : author.date_of_birth_iso))
+            input#date_of_death.form-control(type='date' name='date_of_death' value=(undefined === author ? '' : author.date_of_death_iso))
 
         button.btn.btn-primary(type='submit') Submit
 
