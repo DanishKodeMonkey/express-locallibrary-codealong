@@ -112,7 +112,6 @@ exports.bookinstance_delete_post = asyncHandler(async (req, res, next) => {
 // Display BookInstance update form on GET.
 exports.bookinstance_update_get = asyncHandler(async (req, res, next) => {
     const bookInstance = await BookInstance.findById(req.params.id).exec();
-    console.log(bookInstance);
     // if no book instance is found, return error
     if (!bookInstance) {
         const err = new Error('Book instance not found');
