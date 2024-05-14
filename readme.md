@@ -1,6 +1,6 @@
 # A local library site
 
-## Developed using nodejs(express) and inspired by MDN
+## Created using nodejs(express) and inspired by MDN
 
 I embarked on an epic quest to create a comprehensive local library website. Utilising node.js and leveraging the power of express.
 
